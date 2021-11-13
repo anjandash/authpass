@@ -1,8 +1,14 @@
-const button = document.getElementById("getDetails");
-const new_button = document.getElementById("newConn");
+const new_conn_button = document.getElementById("newConn");
+const existing_conn_button = document.getElementById("existingConn");
 
 const details = document.getElementById("details");
 const authenticating = document.getElementById("authenticating");
+
+
+// sleep timer
+function sleep (time) {
+    return new Promise((resolve) => setTimeout(resolve, time));
+}
 
 // check if bluetooth is enabled
 function isWebBluetoothEnabled() {
@@ -16,56 +22,35 @@ function isWebBluetoothEnabled() {
     return true
 }
 
-// sleep timer
-function sleep (time) {
-    return new Promise((resolve) => setTimeout(resolve, time));
-}
-
-
-new_button.addEventListener("click", async () => {
-
-        // Get permitted devices.
+existing_conn_button.addEventListener("click", async () => {
         let devices = await navigator.bluetooth.getDevices();
-
-        // These devices may not be powered on or in range, so scan for
-        // advertisement packets from them before connecting.
         for (let device of devices) {
-
             let deviceId = device.gatt.device.id;
             let deviceName = device.gatt.device.name;     
             
             if (deviceName == "Spass") {
                 if (deviceId == window.localStorage.getItem('deviceId')){
-                    
                     console.log("success")
                     console.log(deviceId)
-
                     authenticating.innerHTML = window.localStorage.getItem('characteristicsUuid');
-                    window.localStorage.setItem('deviceId', deviceId);
-                    console.log(deviceId)
                 
-                    // validating user token 
+                    // Display token for demo / validation
+                    // WARNING: To be removed in production
                     sleep(1000).then(() => {
                         details.innerHTML = "SUCCESSFULLY AUTHENTICATED"
                         window.location.href="profile.html";
                     });                
                 }
-
-            }
-                     
+            }       
         }
-
 })
 
 
-button.addEventListener("click", async () => {
+new_conn_button.addEventListener("click", async () => {
   try {
 
     // Declaring the service we want
     authpass_service_uuid = "EABC4F75-8967-4234-A483-9660A8F32AB1".toLowerCase()
-    // gpass_service_uuid = "00001802-0000-1000-8000-00805F9B34FB".toLowerCase()
-
-    // "00001803-0000-1000-8000-00805F9B34FB".toLowerCase() //
 
     // Request the Bluetooth device through browser
     const device = await navigator.bluetooth.requestDevice({
@@ -74,10 +59,8 @@ button.addEventListener("click", async () => {
     });
 
     // Connect to the GATT server
-    // We also get the name of the Bluetooth device here
     let deviceId = device.gatt.device.id;
     let deviceName = device.gatt.device.name;
-    
     const server = await device.gatt.connect();
     let connStatus = device.gatt.device.gatt.connected;
 
@@ -96,7 +79,11 @@ button.addEventListener("click", async () => {
     window.localStorage.setItem('characteristicsUuid', characteristicsUuid);
     console.log(deviceId)
 
-    // validating user token 
+    // TODO
+    // validate characteristicsUuid against a list of trusted Uuids
+
+    // Display token for demo / validation
+    // WARNING: To be removed in production
     sleep(1000).then(() => {
         details.innerHTML = "SUCCESSFULLY AUTHENTICATED"
         window.location.href="profile.html";
