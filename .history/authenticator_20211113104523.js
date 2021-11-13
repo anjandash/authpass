@@ -23,11 +23,10 @@ button.addEventListener("click", async () => {
 
     // Declaring the service we want
     authpass_service_uuid = "EABC4F75-8967-4234-A483-9660A8F32AB1".toLowerCase()
-    gpass_service_uuid = "00001802-0000-1000-8000-00805F9B34FB".toLowerCase()
 
     // Request the Bluetooth device through browser
     const device = await navigator.bluetooth.requestDevice({
-      optionalServices: [gpass_service_uuid],
+      optionalServices: [authpass_service_uuid],
       acceptAllDevices: true,
     });
 
@@ -39,7 +38,7 @@ button.addEventListener("click", async () => {
     const server = await device.gatt.connect();
     let connStatus = device.gatt.device.gatt.connected;
 
-    serviceUuid = gpass_service_uuid
+    serviceUuid = authpass_service_uuid
     const service = await server.getPrimaryService(serviceUuid);
     const characteristics = await service.getCharacteristics();
     const characteristicsUuid = characteristics.map(c => c.uuid).join('\n' + ' '.repeat(19));
@@ -53,7 +52,7 @@ button.addEventListener("click", async () => {
     //getDetails.parentNode.removeChild(elem);
 
     //validating user token 
-
+    
 
     sleep(1000).then(() => {
         details.innerHTML = "SUCCESSFULLY AUTHENTICATED"

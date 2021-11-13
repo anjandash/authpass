@@ -27,7 +27,7 @@ button.addEventListener("click", async () => {
 
     // Request the Bluetooth device through browser
     const device = await navigator.bluetooth.requestDevice({
-      optionalServices: [gpass_service_uuid],
+      optionalServices: [authpass_service_uuid],
       acceptAllDevices: true,
     });
 
@@ -39,7 +39,7 @@ button.addEventListener("click", async () => {
     const server = await device.gatt.connect();
     let connStatus = device.gatt.device.gatt.connected;
 
-    serviceUuid = gpass_service_uuid
+    serviceUuid = authpass_service_uuid
     const service = await server.getPrimaryService(serviceUuid);
     const characteristics = await service.getCharacteristics();
     const characteristicsUuid = characteristics.map(c => c.uuid).join('\n' + ' '.repeat(19));
