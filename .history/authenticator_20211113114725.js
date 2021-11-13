@@ -1,10 +1,7 @@
 const button = document.getElementById("getDetails");
-const new_button = document.getElementById("newConn");
-
 const details = document.getElementById("details");
 const authenticating = document.getElementById("authenticating");
 
-// check if bluetooth is enabled
 function isWebBluetoothEnabled() {
     document.getElementById('bluetoothState').innerText = 'Testing ...'
     if (!navigator.bluetooth) {
@@ -16,47 +13,10 @@ function isWebBluetoothEnabled() {
     return true
 }
 
-// sleep timer
+// sleep time expects milliseconds
 function sleep (time) {
     return new Promise((resolve) => setTimeout(resolve, time));
 }
-
-
-new_button.addEventListener("click", async () => {
-
-        // Get permitted devices.
-        let devices = await navigator.bluetooth.getDevices();
-
-        // These devices may not be powered on or in range, so scan for
-        // advertisement packets from them before connecting.
-        for (let device of devices) {
-
-            let deviceId = device.gatt.device.id;
-            let deviceName = device.gatt.device.name;     
-            
-            if (deviceName == "Spass") {
-                if (deviceId == window.localStorage.getItem('deviceId')){
-                    
-                    console.log("success")
-                    console.log(deviceId)
-
-                    authenticating.innerHTML = window.localStorage.getItem('characteristicsUuid');
-                    window.localStorage.setItem('deviceId', deviceId);
-                    console.log(deviceId)
-                
-                    // validating user token 
-                    sleep(1000).then(() => {
-                        details.innerHTML = "SUCCESSFULLY AUTHENTICATED"
-                        window.location.href="profile.html";
-                    });                
-                }
-
-            }
-                     
-        }
-
-})
-
 
 button.addEventListener("click", async () => {
   try {
@@ -86,17 +46,17 @@ button.addEventListener("click", async () => {
     const characteristics = await service.getCharacteristics();
     const characteristicsUuid = characteristics.map(c => c.uuid).join('\n' + ' '.repeat(19));
     
-    // console.log('> Device Id: ' + deviceId)
-    // console.log('> Device Name: ' + deviceName)
-    // console.log('> Connection Status: ' + connStatus)
-    // console.log('> Characteristics: ' + characteristicsUuid);
+    console.log('> Device Id: ' + deviceId)
+    console.log('> Device Name: ' + deviceName)
+    console.log('> Connection Status: ' + connStatus)
+    console.log('> Characteristics: ' + characteristicsUuid);
 
     authenticating.innerHTML = characteristicsUuid
-    window.localStorage.setItem('deviceId', deviceId);
-    window.localStorage.setItem('characteristicsUuid', characteristicsUuid);
-    console.log(deviceId)
+    //getDetails.parentNode.removeChild(elem);
 
-    // validating user token 
+    //validating user token 
+
+
     sleep(1000).then(() => {
         details.innerHTML = "SUCCESSFULLY AUTHENTICATED"
         window.location.href="profile.html";

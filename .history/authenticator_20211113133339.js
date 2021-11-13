@@ -4,7 +4,6 @@ const new_button = document.getElementById("newConn");
 const details = document.getElementById("details");
 const authenticating = document.getElementById("authenticating");
 
-// check if bluetooth is enabled
 function isWebBluetoothEnabled() {
     document.getElementById('bluetoothState').innerText = 'Testing ...'
     if (!navigator.bluetooth) {
@@ -16,11 +15,34 @@ function isWebBluetoothEnabled() {
     return true
 }
 
-// sleep timer
+// sleep time expects milliseconds
 function sleep (time) {
     return new Promise((resolve) => setTimeout(resolve, time));
 }
 
+function connectToBluetoothDevice(device) {
+    //const abortController = new AbortController();
+  
+    let deviceConnectPromise = new Promise((resolve, reject) => {
+      device.addEventListener('advertisementreceived', evt => {
+        //abortController.abort();
+        device.gatt.connect()
+            .then(gattServer => resolve(gattServer))
+            .catch(error => reject(error));
+
+        let deviceId = device.gatt.device.id;
+        let deviceName = device.gatt.device.name;
+        let connStatus = device.gatt.device.gatt.connected;
+        console.log('> CDevice Id: ' + deviceId)
+        console.log('> CDevice Name: ' + deviceName)
+
+        
+      }, {once: true});
+    });
+  
+    device.watchAdvertisements({signal: abortController.signal});
+    return deviceConnectPromise;
+}
 
 new_button.addEventListener("click", async () => {
 
@@ -34,21 +56,22 @@ new_button.addEventListener("click", async () => {
             let deviceId = device.gatt.device.id;
             let deviceName = device.gatt.device.name;     
             
+            console.log(window.localStorage.getItem('test'))
             if (deviceName == "Spass") {
-                if (deviceId == window.localStorage.getItem('deviceId')){
+                if (deviceId == window.localStorage.getItem('test')){
                     
                     console.log("success")
-                    console.log(deviceId)
 
-                    authenticating.innerHTML = window.localStorage.getItem('characteristicsUuid');
-                    window.localStorage.setItem('deviceId', deviceId);
+                    authenticating.innerHTML = characteristicsUuid
+                    window.localStorage.setItem('test', deviceId);
                     console.log(deviceId)
                 
                     // validating user token 
                     sleep(1000).then(() => {
                         details.innerHTML = "SUCCESSFULLY AUTHENTICATED"
                         window.location.href="profile.html";
-                    });                
+                    });
+                
                 }
 
             }

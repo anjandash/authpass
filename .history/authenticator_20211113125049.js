@@ -4,7 +4,6 @@ const new_button = document.getElementById("newConn");
 const details = document.getElementById("details");
 const authenticating = document.getElementById("authenticating");
 
-// check if bluetooth is enabled
 function isWebBluetoothEnabled() {
     document.getElementById('bluetoothState').innerText = 'Testing ...'
     if (!navigator.bluetooth) {
@@ -16,11 +15,34 @@ function isWebBluetoothEnabled() {
     return true
 }
 
-// sleep timer
+// sleep time expects milliseconds
 function sleep (time) {
     return new Promise((resolve) => setTimeout(resolve, time));
 }
 
+function connectToBluetoothDevice(device) {
+    const abortController = new AbortController();
+  
+    let deviceConnectPromise = new Promise((resolve, reject) => {
+      device.addEventListener('advertisementreceived', evt => {
+        abortController.abort();
+        device.gatt.connect()
+            .then(gattServer => resolve(gattServer))
+            .catch(error => reject(error));
+
+        let deviceId = device.gatt.device.id;
+        let deviceName = device.gatt.device.name;
+        let connStatus = device.gatt.device.gatt.connected;
+        console.log('> CDevice Id: ' + deviceId)
+        console.log('> CDevice Name: ' + deviceName)
+
+        
+      }, {once: true});
+    });
+  
+    device.watchAdvertisements({signal: abortController.signal});
+    return deviceConnectPromise;
+}
 
 new_button.addEventListener("click", async () => {
 
@@ -32,30 +54,26 @@ new_button.addEventListener("click", async () => {
         for (let device of devices) {
 
             let deviceId = device.gatt.device.id;
-            let deviceName = device.gatt.device.name;     
-            
-            if (deviceName == "Spass") {
-                if (deviceId == window.localStorage.getItem('deviceId')){
-                    
-                    console.log("success")
-                    console.log(deviceId)
+            let deviceName = device.gatt.device.name;                
 
-                    authenticating.innerHTML = window.localStorage.getItem('characteristicsUuid');
-                    window.localStorage.setItem('deviceId', deviceId);
-                    console.log(deviceId)
-                
-                    // validating user token 
-                    sleep(1000).then(() => {
-                        details.innerHTML = "SUCCESSFULLY AUTHENTICATED"
-                        window.location.href="profile.html";
-                    });                
-                }
+            try{
+                const server = await device.gatt.connect();
+                let connStatus = device.gatt.device.gatt.connected;
 
+                console.log('> Device Id: ' + deviceId)
+                console.log('> Device Name: ' + deviceName)
+                console.log('> Connection Status: ' + connStatus)
+                console.log('> Characteristics: ' + characteristicsUuid);                
+            } catch (err) {
+                console.log(err);
+                console.log("An error occured while fetching device details");                
             }
-                     
+
+
         }
 
 })
+
 
 
 button.addEventListener("click", async () => {
@@ -86,15 +104,12 @@ button.addEventListener("click", async () => {
     const characteristics = await service.getCharacteristics();
     const characteristicsUuid = characteristics.map(c => c.uuid).join('\n' + ' '.repeat(19));
     
-    // console.log('> Device Id: ' + deviceId)
-    // console.log('> Device Name: ' + deviceName)
-    // console.log('> Connection Status: ' + connStatus)
-    // console.log('> Characteristics: ' + characteristicsUuid);
+    console.log('> Device Id: ' + deviceId)
+    console.log('> Device Name: ' + deviceName)
+    console.log('> Connection Status: ' + connStatus)
+    console.log('> Characteristics: ' + characteristicsUuid);
 
     authenticating.innerHTML = characteristicsUuid
-    window.localStorage.setItem('deviceId', deviceId);
-    window.localStorage.setItem('characteristicsUuid', characteristicsUuid);
-    console.log(deviceId)
 
     // validating user token 
     sleep(1000).then(() => {

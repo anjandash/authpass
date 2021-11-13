@@ -4,7 +4,6 @@ const new_button = document.getElementById("newConn");
 const details = document.getElementById("details");
 const authenticating = document.getElementById("authenticating");
 
-// check if bluetooth is enabled
 function isWebBluetoothEnabled() {
     document.getElementById('bluetoothState').innerText = 'Testing ...'
     if (!navigator.bluetooth) {

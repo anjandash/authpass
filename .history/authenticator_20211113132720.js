@@ -4,7 +4,6 @@ const new_button = document.getElementById("newConn");
 const details = document.getElementById("details");
 const authenticating = document.getElementById("authenticating");
 
-// check if bluetooth is enabled
 function isWebBluetoothEnabled() {
     document.getElementById('bluetoothState').innerText = 'Testing ...'
     if (!navigator.bluetooth) {
@@ -16,11 +15,34 @@ function isWebBluetoothEnabled() {
     return true
 }
 
-// sleep timer
+// sleep time expects milliseconds
 function sleep (time) {
     return new Promise((resolve) => setTimeout(resolve, time));
 }
 
+function connectToBluetoothDevice(device) {
+    //const abortController = new AbortController();
+  
+    let deviceConnectPromise = new Promise((resolve, reject) => {
+      device.addEventListener('advertisementreceived', evt => {
+        //abortController.abort();
+        device.gatt.connect()
+            .then(gattServer => resolve(gattServer))
+            .catch(error => reject(error));
+
+        let deviceId = device.gatt.device.id;
+        let deviceName = device.gatt.device.name;
+        let connStatus = device.gatt.device.gatt.connected;
+        console.log('> CDevice Id: ' + deviceId)
+        console.log('> CDevice Name: ' + deviceName)
+
+        
+      }, {once: true});
+    });
+  
+    device.watchAdvertisements({signal: abortController.signal});
+    return deviceConnectPromise;
+}
 
 new_button.addEventListener("click", async () => {
 
@@ -34,28 +56,38 @@ new_button.addEventListener("click", async () => {
             let deviceId = device.gatt.device.id;
             let deviceName = device.gatt.device.name;     
             
-            if (deviceName == "Spass") {
-                if (deviceId == window.localStorage.getItem('deviceId')){
-                    
-                    console.log("success")
-                    console.log(deviceId)
-
-                    authenticating.innerHTML = window.localStorage.getItem('characteristicsUuid');
-                    window.localStorage.setItem('deviceId', deviceId);
-                    console.log(deviceId)
-                
-                    // validating user token 
-                    sleep(1000).then(() => {
-                        details.innerHTML = "SUCCESSFULLY AUTHENTICATED"
-                        window.location.href="profile.html";
-                    });                
-                }
+            if (deviceName = "Spass") {
 
             }
                      
         }
 
 })
+
+
+// function onWatchAdvertisementsButtonClick() {
+    
+//     navigator.bluetooth.requestDevice({
+//   // filters: [...] <- Prefer filters to save energy & show relevant devices.
+//       optionalServices: ["EABC4F75-8967-4234-A483-9660A8F32AB1".toLowerCase()],
+//       acceptAllDevices: true
+//     })
+//     .then(device => {
+//         console.log('> Requested ' + device.name);
+  
+//       device.addEventListener('advertisementreceived', (event) => {
+//         console.log('Advertisement received.');
+//         console.log('  Device Name: ' + event.device.name);
+//         console.log('  Device ID: ' + event.device.id);
+//       });
+  
+//       console.log('Watching advertisements from "' + device.name + '"...');
+//       return device.watchAdvertisements();  
+//     })
+//     .catch(error => {
+//       log('Argh! ' + error);
+//     });
+//   }
 
 
 button.addEventListener("click", async () => {
@@ -92,8 +124,7 @@ button.addEventListener("click", async () => {
     // console.log('> Characteristics: ' + characteristicsUuid);
 
     authenticating.innerHTML = characteristicsUuid
-    window.localStorage.setItem('deviceId', deviceId);
-    window.localStorage.setItem('characteristicsUuid', characteristicsUuid);
+    localStorage.setItem('test', deviceId);
     console.log(deviceId)
 
     // validating user token 
